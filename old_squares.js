@@ -22,14 +22,16 @@ function find_dist(pos1, pos2) {
 
 // UNTESTED but should be good:
 
+
+// Not fully implemented but should be, need to replace star_zxq below with memory['base_star']
 let dist1 = find_dist(base.position, star_zxq.position);
 let dist2 = find_dist(base.position, star_a1c.position);
 
 if(dist1 < dist2) {
-    base_star = star_zxq;
+    memory['base_star'] = star_zxq;
 }
 else {
-    base_star = star_a1c;
+    memory['base_star'] = star_a1c;
 }
 
 all_spirits = [];
@@ -48,22 +50,14 @@ if(current_mode == 0) {
     if(number_units == 2) {
         for(unit of friendly_spirits) {
             unit.shout("Only 2!");
+            if(memory[unit.id] == "outpost_harvesting" || memory[unit.id] == "outpost_charging" || memory[unit.id] == "harass") {
+                    memory[unit.id] = "base_harvesting";
+            }
             if(unit.energy == unit.energy_capacity) {
-                if(memory[unit.id] == "outpost_harvesting" || memory[unit.id] == "outpost_charging") {
-                    memory[unit.id] = "outpost_charging";
-                }
-                else {
-                    memory[unit.id] = "base_charging";
-                }
-                
+                memory[unit.id] = "base_charging";
             } 
             else if(unit.energy == 0) {
-                if(memory[unit.id] == "outpost_harvesting" || memory[unit.id] == "outpost_charging") {
-                    memory[unit.id] = "outpost_harvesting";
-                }
-                else {
-                    memory[unit.id] = "base_harvesting";
-                }
+                memory[unit.id] = "base_harvesting";
             }
 
             if(memory[unit.id] == "base_charging") {
@@ -140,15 +134,12 @@ if(current_mode == 0) {
                 
                 base_defenders -= 1;
             }
-            else if(outpost.control == 'saltAxAtlas' && outpost.sight.enemies.length > 0 && unit.energy > 0) {
-                memory[unit.id] = "outpost_defender";
-            }
             else {
                 
                 if(memory[unit.id] == "outpost_defender" || memory[unit.id] == "base_defender" || memory[unit.id] == "base_charging" || memory[unit.id] == "base_harvesting") {
                     memory[unit.id] = "outpost_harvesting";
                 }
-                if(unit.energy == unit.energy_capacity) {
+                if(unit.energy > 0) {
                     memory[unit.id] = "outpost_charging";
                 } 
                 else if(unit.energy == 0) {
@@ -174,67 +165,63 @@ if(current_mode == 0) {
 
             if(memory[unit.id] == "harass") {
                 let number_enemy_units_harass = unit.sight.enemies.length;
-                //if(enemy_base.energy < unit.energy/2) {
-                //    memory[unit.id] = "kill_enemy_base";
-                //    unit.shout("Juicy Base!");
-                //    let distance = find_dist(unit.position, enemy_base.position);
-                //    if(40000 < distance) {
-                //        unit.move(enemy_base.position);
-                //        continue;
-                //    }
-                //    unit.energize(enemy_base);
-                //   
-                //}
-                //if(number_enemy_units_harass > 0) {
-                //    unit.shout("I C U!");
-                //    var harass_invader = spirits[unit.sight.enemies[0]];
-                //    let distance = find_dist(unit.position, harass_invader.position);
-                //    if(number_enemy_units_harass >= 5) {
-                //        unit.move(outpost.position);
-                //        continue;
-                //    }
-                //    else if(number_enemy_units_harass == 1 && distance < 90000 && find_dist(harass_invader.position, enemy_base.position) > 5000 && unit.energy - unit.energy_capacity/2 > harass_invader.energy/2) {
-                //        unit.jump(harass_invader.position);
-                //        unit.energize(harass_invader);
-                //        continue;
-                //    }
-                //    else if(40000 < distance && unit.energy > harass_invader.energy) {
-                //        unit.move(harass_invader.position);
-                //        unit.energize(harass_invader);
-                //        continue;
-                //    }
-                //    else if(40000 < distance && unit.energy < harass_invader.energy) {
-                //        unit.move(star_p89.position);
-                //        unit.energize(star_p89);
-                //        continue;
-                //    }
-                //    else if(distance < 40000) {
-                //        unit.energize(harass_invader);
-                //        continue;
-                //    }
-                //    else {
-                //        unit.move(star_p89.position);
-                //        unit.energize(star_p89);
-                //        continue;
-                //    }
-                //    
-                //}
+                // if(enemy_base.energy < unit.energy/2) {
+                //     memory[unit.id] = "kill_enemy_base";
+                //     unit.shout("Juicy Base!");
+                //     let distance = find_dist(unit.position, enemy_base.position);
+                //     if(40000 < distance) {
+                //         unit.move(enemy_base.position);
+                //         continue;
+                //     }
+                //     unit.energize(enemy_base);
+                   
+                // }
                 if(number_enemy_units_harass > 0) {
-                    var harass_invader = spirits[unit.sight.enemies[0]];
+                    unit.shout("I C U!");
+                    let harass_invader = spirits[unit.sight.enemies[0]];
                     let distance = find_dist(unit.position, harass_invader.position);
-                    if(distance < 63000) {
-                        unit.shout("close one");
+                    
+                    if(number_enemy_units_harass >=5) {
                         unit.move(outpost.position);
+                        continue;
                     }
-                    else if(100000 < find_dist(unit.position, enemy_base.position)) {
-                        unit.shout("hehe");
-                        unit.move(enemy_base.position);
+                    else if(40000 < distance && unit.energy > harass_invader.energy) {
+                        unit.move(harass_invader.position);
+                        unit.energize(harass_invader);
+                        continue;
+                    }
+                    else if(40000 < distance && unit.energy < harass_invader.energy) {
+                        unit.move(star_p89.position);
+                        unit.energize(unit);
+                        continue;
+                    }
+                    else if(distance < 40000) {
+                        unit.energize(harass_invader);
+                        continue;
                     }
                     else {
-                        unit.shout("hehe");
-                        unit.move(outpost.position);
+                        unit.move(star_p89.position);
+                        unit.energize(unit);
+                        continue;
                     }
+                   
                 }
+                //if(number_enemy_units_harass > 0) {
+                //    var harass_invader = spirits[unit.sight.enemies[0]];
+                //    let distance = find_dist(unit.position, harass_invader.position);
+                //    if(distance < 63000) {
+                //        unit.shout("close one");
+                //        unit.move(outpost.position);
+                //    }
+                //    else if(100000 < find_dist(unit.position, enemy_base.position)) {
+                //        unit.shout("hehe");
+                //        unit.move(enemy_base.position);
+                //    }
+                //    else {
+                //        unit.shout("hehe");
+                //        unit.move(outpost.position);
+                //    }
+                //}
                 else if(100000 < find_dist(unit.position, enemy_base.position)) {
                     unit.shout("hehe");
                     unit.move(enemy_base.position);
@@ -243,19 +230,6 @@ if(current_mode == 0) {
                     unit.shout("hehe");
                     unit.move(outpost.position);
                 }
-            }
-            else if(memory[unit.id] == "outpost_defender") {
-                unit.shout("Defend Outpost");
-                var outpost_invader = spirits[outpost.sight.enemies[0]];
-                let distance = find_dist(unit.position, outpost_invader.position);
-                if(distance < 90000 && find_dist(outpost_invader.position, outpost.position) > 5000 && find_dist(outpost_invader.position, star_p89.position) > 20000 && unit.energy - unit.energy_capacity/2 > outpost_invader.energy/2 && unit.energy - unit.energy_capacity/2 > 5) {
-                    unit.jump(outpost_invader.position);
-                }
-                else if(40000 < distance) {
-                    unit.move(outpost_invader.position);
-                    continue;
-                }
-                unit.energize(outpost_invader);
             }
             else if(memory[unit.id] == "outpost_charging") {
                 unit.shout("Charge Outpost");
@@ -275,12 +249,9 @@ if(current_mode == 0) {
             }
             else if(memory[unit.id] == "base_defender") {
                 unit.shout("Defend Base");
-                var base_invader = spirits[base.sight.enemies[0]];
+                let base_invader = spirits[base.sight.enemies[0]];
                 let distance = find_dist(unit.position, base_invader.position);
-                if(distance < 90000 && find_dist(base_invader.position, base.position) > 5000 && find_dist(base_invader.position, star_zxq.position) > 20000 && unit.energy - unit.energy_capacity/2 > base_invader.energy/2 && unit.energy - unit.energy_capacity/2 > 5) {
-                    unit.jump(base_invader.position);
-                }
-                else if(40000 < distance) {
+                if(40000 < distance) {
                     unit.move(base_invader.position);
                     continue;
                 }
@@ -368,7 +339,7 @@ else if(current_mode == 2) {
         }
 
         if(memory[unit.id] == "killing") {
-            unit.shout("En Route!");
+            unit.shout("Nuke Incoming!");
             if(40000 < find_dist(unit.position, enemy_base.position)) {
                 unit.move(enemy_base.position);
                 continue;
@@ -378,7 +349,12 @@ else if(current_mode == 2) {
         else if(memory[unit.id] == "harvesting") {
             unit.shout("Chargin UP!");
             if(40000 < find_dist(unit.position, star_p89.position)) {
-                unit.move(star_p89.position);
+                if(find_dist(base.position, star_zxq.position) < find_dist(base.position, star_a1c.position)) {
+                    unit.move(star_zxq.position);
+                }
+                else {
+                    unit.move(star_p89.position);
+                }
                 continue;
             }
             unit.energize(unit);
