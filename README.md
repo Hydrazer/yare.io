@@ -7,6 +7,7 @@ You can get starter code here -> intro_code.js
 -   [ ] General
     -   [ ] Switch to Stateless
     -   [ ] Calculate Threat Level
+    -   [ ] Energy Distrubution / Balancing Within Cluster
     -   [ ] Automatically Determine When to Attack Enemy Base
     -   [ ] Skirt Around Captured Outpost
     -   [ ] Energize While Moving to Best Position
@@ -21,3 +22,4 @@ You can get starter code here -> intro_code.js
     -   [ ] Jumping
 -   [ ] Triangle
     -   [ ] Exploding
+    -   [ ] Heal Units Meant to Explode
