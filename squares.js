@@ -18,6 +18,14 @@ function get_closest_enemy(enemies, position) {
     return closest_enemy;
 }
 
+function get_total_energy(enemies) {
+    let total_energy = 0;
+    for(enemy of enemies) {
+        total_energy += spirits[enemy].energy
+    }
+    return total_energy;
+}
+
 // Main Loop
 {
 
@@ -62,7 +70,7 @@ if(current_mode == 0) {
             if(memory[unit.id] == "outpost_harvesting" && unit.energy != unit.energy_capacity) {
                 memory[unit.id] = "outpost_harvesting";
             }
-            else if(unit.energy > 0) {
+            else if(unit.energy > 30) {
                 memory[unit.id] = "harasser";
             }
             else {
@@ -83,11 +91,14 @@ if(current_mode == 0) {
                     memory[unit.id] = "outpost_harvesting";
                 }
 
-                if(unit.energy > 0) {
+                if(unit.energy > 0 && outpost.energy < 1000) {
                     memory[unit.id] = "outpost_charging";
                 } 
-                else if(unit.energy == 0) {
+                else if((unit.energy == 0) || (unit.energy < unit.energy_capacity && outpost.energy == outpost.energy_capacity)) {
                     memory[unit.id] = "outpost_harvesting";
+                }
+                else if(unit.energy == unit.energy_capacity) {
+                    memory[unit.id] = "outpost_do_nothing";
                 }
             }
             outpost_count -= 1;
@@ -126,7 +137,7 @@ if(current_mode == 0) {
                 else if(distance_to_enemy > 40000 && unit.energy > closest_enemy_harasser.energy) {
                     unit.move(closest_enemy_harasser.position);
                 }
-                else if(distance_to_enemy > 40000 && unit.energy < harass_invader.energy) {
+                else if(distance_to_enemy > 40000 && unit.energy < closest_enemy_harasser.energy) {
                     unit.move(star_p89.position);
                 }
                 else if(distance_to_enemy < 40000) {
@@ -163,6 +174,7 @@ if(current_mode == 0) {
                 continue;
             }
             unit.energize(outpost);
+            outpost.energy += unit.size;
         } 
         else if(memory[unit.id] == "outpost_harvesting") {
             unit.shout("Harvest Outpost!");
@@ -171,6 +183,10 @@ if(current_mode == 0) {
                 continue;
             }
             unit.energize(unit);
+        }
+        else if(memory[unit.id] == "outpost_do_nothing") {
+            unit.shout("I'm Bored!");
+            unit.move(outpost.position) // Move to half-way point between outpost and star_p89
         }
         else if(memory[unit.id] == "base_defender") {
             unit.shout("Defend Base!");
@@ -201,10 +217,11 @@ if(current_mode == 0) {
     }
 }
 else if(current_mode == 1) {
+    ready_spirits = friendly_spirits.filter(x => x.energy == x.energy_capacity).length;
     // Loops through all friendly units
     for(unit of friendly_spirits) {
         // If fully charged -> Attack enemy base
-        if(unit.energy == unit.energy_capacity) {
+        if(unit.energy == unit.energy_capacity && ready_spirits == number_units) {
             memory[unit.id] = "attacking";
         } 
         // If not fully charged -> Charge to capacity
@@ -222,6 +239,9 @@ else if(current_mode == 1) {
         } 
         else if(memory[unit.id] == "harvesting") {
             unit.shout("Charging!");
+            if(unit.energy == unit.energy_capacity) {
+                continue;
+            }
             if(outpost_controller == "saltAxAtlas" || outpost_controller == "") {
                 if(40000 < find_dist(unit.position, star_p89.position)) {
                     unit.move(star_p89.position);

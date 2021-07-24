@@ -8,6 +8,7 @@ You can get starter code here -> intro_code.js
     -   [ ] Switch to Stateless
     -   [ ] Calculate Threat Level
     -   [ ] Energy Distrubution / Balancing Within Cluster
+    -   [ ] Maintain Proper Harvesting Levels / Keep Units @ 80% Energy Capacity
     -   [ ] Automatically Determine When to Attack Enemy Base
     -   [ ] Skirt Around Captured Outpost
     -   [ ] Energize While Moving to Best Position

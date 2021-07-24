@@ -126,7 +126,7 @@ if(current_mode == 0) {
                 else if(distance_to_enemy > 40000 && unit.energy > closest_enemy_harasser.energy) {
                     unit.move(closest_enemy_harasser.position);
                 }
-                else if(distance_to_enemy > 40000 && unit.energy < harass_invader.energy) {
+                else if(distance_to_enemy > 40000 && unit.energy < closest_enemy_harasser.energy) {
                     unit.move(star_p89.position);
                 }
                 else if(distance_to_enemy < 40000) {
