@@ -1,22 +1,7 @@
-// yare.io code for square units
+// yare.io code for triangle units
 
 // Function Definitions
-function find_dist(position_1, position_2) {
-    return (position_1[0]-position_2[0])**2+(position_1[1]-position_2[1])**2
-}
-
-function get_closest_enemy(enemies, position) {
-    let min_dist = find_dist(spirits[enemies[0]].position, position);
-    let closest_enemy = spirits[enemies[0]];
-    for(enemy of enemies) {
-        let enemy_dist = find_dist(spirits[enemy].position, position);
-        if(enemy_dist < min_dist) {
-            min_dist = enemy_dist;
-            closest_enemy = spirits[enemy];
-        }
-    }
-    return closest_enemy;
-}
+import {find_dist, get_closest_enemy} from "../tools"
 
 // Main Loop
 {
@@ -51,8 +36,8 @@ let outpost_controller = outpost.control;
 let current_mode = 0; // 0 -> Normal Operation, 1 -> Attack Enemy Base
 
 if(current_mode == 0) {
-    let harasser_count = 1;
-    let outpost_count  = Math.floor(number_units/3);
+    let harasser_count = 2;
+    let outpost_count  = Math.floor(number_units/4);
     if(outpost.control != 'saltAxAtlas' && outpost.control != '') {
         harasser_count = 0;
         outpost_count  = 0;
@@ -120,7 +105,7 @@ if(current_mode == 0) {
                 unit.shout("Enemy Spotted!");
                 let closest_enemy_harasser = get_closest_enemy(unit.sight.enemies, unit.position)
                 let distance_to_enemy = find_dist(unit.position, closest_enemy_harasser.position);
-                if(number_enemy_units_harasser >= 5 && find_dist(unit.position, outpost.position) > 30000) {
+                if(number_enemy_units_harasser >= 3 && find_dist(unit.position, outpost.position) > 30000) {
                     unit.move(outpost.position);
                 }
                 else if(distance_to_enemy > 40000 && unit.energy > closest_enemy_harasser.energy) {

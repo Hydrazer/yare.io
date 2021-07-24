@@ -1,9 +1,7 @@
 // Refactoring code, this code kinda works but breaks on a bunch of edge cases
 // Use with squares, it will mostly kinda sorta work, but not really
 
-function find_dist(pos1, pos2) {
-    return (pos1[0]-pos2[0])**2+(pos1[1]-pos2[1])**2
-}
+import {find_dist, get_closest_enemy} from "../tools"
 
 {
 
