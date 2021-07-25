@@ -11,12 +11,12 @@ You can get starter code here -> intro_code.js
     -   [ ] Maintain Proper Harvesting Levels / Keep Units @ 80% Energy Capacity
     -   [ ] Automatically Determine When to Attack Enemy Base
     -   [ ] Skirt Around Captured Outpost
-    -   [ ] Energize While Moving to Best Position
+    -   [X] Energize While Moving to Best Position
     -   [ ] Create Pipe From Base Star to Base
     -   [ ] Account For Enemy Shape
     -   [ ] Improve Harasser Unit Performance
-        -   [ ] Harasser Move in Opposite Direct of Closest Enemy
-        -   [ ] Harasser Move to Specific Location Instead of Bouncing Between Two Points
+        -   [X] Harasser Move in Opposite Direct of Closest Enemy
+        -   [X] Harasser Move to Specific Location Instead of Bouncing Between Two Points
 -   [ ] Circle
     -   [ ] Merging
 -   [ ] Square

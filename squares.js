@@ -2,7 +2,31 @@
 
 // Function Definitions
 function find_dist(position_1, position_2) {
-    return (position_1[0]-position_2[0])**2+(position_1[1]-position_2[1])**2
+    return (position_1[0] - position_2[0])**2 + (position_1[1] - position_2[1])**2
+}
+
+function subtract_positions(position_1, position_2) {
+    return [position_1[0] - position_2[0], position_1[1] - position_2[1]];
+}
+
+function normalize_vector(vector, magnitude) {
+    return [vector[0] / magnitude, vector[1] / magnitude];
+}
+
+function find_point_within_energize(position_1, position_2) {
+    let vector = subtract_positions(position_1, position_2);
+    let magnitude = Math.sqrt(vector[0]**2 + vector[1]**2);
+    let direction = normalize_vector(vector, magnitude);
+    let offset = [Math.floor(direction[0] * 199), Math.floor(direction[1] * 199)];
+    return [offset[0] + position_2[0], offset[1] + position_2[1]];
+}
+
+function harasser_run(position_1, position_2) {
+    let vector = subtract_positions(position_1, position_2);
+    let magnitude = Math.sqrt(vector[0]**2 + vector[1]**2);
+    let direction = normalize_vector(vector, magnitude);
+    let offset = [Math.floor(direction[0] * 199), Math.floor(direction[1] * 199)];
+    return [offset[0] + position_1[0], offset[1] + position_1[1]];
 }
 
 function get_closest_enemy(enemies, position) {
@@ -40,14 +64,14 @@ else {
 }
 
 // Gets a list of all spirits
-all_spirits = [];
+let all_spirits = [];
 for(x of Object.keys(spirits)) {
     all_spirits.push(spirits[x]);
 }
 
 // Gets a list of enemy / friendly spirits that are alive
-enemy_spirits = all_spirits.filter(x => x.hp == 1).filter(x => x.player_id != 'saltAxAtlas');
-friendly_spirits = all_spirits.filter(x => x.hp == 1).filter(x => x.player_id == 'saltAxAtlas');
+let enemy_spirits = all_spirits.filter(x => x.hp == 1).filter(x => x.player_id != 'saltAxAtlas');
+let friendly_spirits = all_spirits.filter(x => x.hp == 1).filter(x => x.player_id == 'saltAxAtlas');
 
 // Gets number of friendly spirits
 let number_units = friendly_spirits.length;
@@ -55,6 +79,13 @@ let number_units = friendly_spirits.length;
 
 // Gets controller of outpost
 let outpost_controller = outpost.control;
+
+// Gets location for outpost units
+let outpost_unit_position = find_point_within_energize(outpost.position, star_p89.position);
+let base_unit_position = find_point_within_energize(memory['base_star'].position, base.position);
+let base_pipe_unit_position_1 = find_point_within_energize(memory['base_star'].position, base_unit_position);
+let base_pipe_unit_position_2 = find_point_within_energize(memory['base_star'].position, base_pipe_unit_position_1);
+let harasser_unit_position = find_point_within_energize(star_p89.position, enemy_base.position);
 
 let current_mode = 0; // 0 -> Normal Operation, 1 -> Attack Enemy Base
 
@@ -127,34 +158,33 @@ if(current_mode == 0) {
         
         if(memory[unit.id] == "harasser") {
             let number_enemy_units_harasser = unit.sight.enemies.length;
+            let run = false;
             if(number_enemy_units_harasser > 0) {
-                unit.shout("Enemy Spotted!");
-                let closest_enemy_harasser = get_closest_enemy(unit.sight.enemies, unit.position)
+                let enemy_units_harasser_total_energy = get_total_energy(unit.sight.enemies);
+                let closest_enemy_harasser = get_closest_enemy(unit.sight.enemies, unit.position);
                 let distance_to_enemy = find_dist(unit.position, closest_enemy_harasser.position);
-                if(number_enemy_units_harasser >= 5 && find_dist(unit.position, outpost.position) > 30000) {
-                    unit.move(outpost.position);
+                if(distance_to_enemy <= 41000) {
+                    unit.move(closest_enemy_harasser.position);
+                    unit.energize(closest_enemy_harasser);
+                }
+                else if(enemy_units_harasser_total_energy >= unit.energy / 2 && distance_to_enemy < 90000) {
+                    run = true;
                 }
                 else if(distance_to_enemy > 40000 && unit.energy > closest_enemy_harasser.energy) {
                     unit.move(closest_enemy_harasser.position);
-                }
-                else if(distance_to_enemy > 40000 && unit.energy < closest_enemy_harasser.energy) {
-                    unit.move(star_p89.position);
-                }
-                else if(distance_to_enemy < 40000) {
                     unit.energize(closest_enemy_harasser);
                 }
-                else {
-                    unit.energize(unit);
+                else if(distance_to_enemy > 41000 && unit.energy <= closest_enemy_harasser.energy) {
+                    run = true;
                 }
-                
-            }
-            else if(100000 < find_dist(unit.position, enemy_base.position)) {
-                unit.shout("Blocking Spawn!");
-                unit.move(enemy_base.position);
+                if(run) {
+                    unit.move(harasser_run(unit.position, closest_enemy_harasser.position));
+                    run = false;
+                }
             }
             else {
                 unit.shout("Blocking Spawn!");
-                unit.move(star_p89.position);
+                unit.move(harasser_unit_position);
             }
         }
         else if(memory[unit.id] == "outpost_defender") {
@@ -169,24 +199,18 @@ if(current_mode == 0) {
         }
         else if(memory[unit.id] == "outpost_charging") {
             unit.shout("Charge Outpost!");
-            if(find_dist(unit.position, outpost.position) > 40000) {
-                unit.move(outpost.position);
-                continue;
-            }
+            unit.move(outpost_unit_position);
             unit.energize(outpost);
             outpost.energy += unit.size;
         } 
         else if(memory[unit.id] == "outpost_harvesting") {
             unit.shout("Harvest Outpost!");
-            if(find_dist(unit.position, star_p89.position) > 40000) {
-                unit.move(star_p89.position);
-                continue;
-            }
+            unit.move(outpost_unit_position);
             unit.energize(unit);
         }
         else if(memory[unit.id] == "outpost_do_nothing") {
             unit.shout("I'm Bored!");
-            unit.move(outpost.position) // Move to half-way point between outpost and star_p89
+            unit.move(outpost_unit_position);
         }
         else if(memory[unit.id] == "base_defender") {
             unit.shout("Defend Base!");
@@ -200,10 +224,7 @@ if(current_mode == 0) {
         }
         else if(memory[unit.id] == "base_charging") {
             unit.shout("Charge Base!");
-            if(find_dist(unit.position, base.position) > 40000) {
-                unit.move(base.position);
-                continue;
-            }
+            unit.move(base_unit_position);
             unit.energize(base);
         } 
         else if(memory[unit.id] == "base_harvesting") {
@@ -239,20 +260,17 @@ else if(current_mode == 1) {
         } 
         else if(memory[unit.id] == "harvesting") {
             unit.shout("Charging!");
-            if(unit.energy == unit.energy_capacity) {
-                continue;
-            }
             if(outpost_controller == "saltAxAtlas" || outpost_controller == "") {
-                if(40000 < find_dist(unit.position, star_p89.position)) {
-                    unit.move(star_p89.position);
-                    continue;
-                }
+                unit.move(outpost_unit_position);
             }
             else {
                 if(40000 < find_dist(unit.position, memory['base_star'].position)) {
                     unit.move(memory['base_star'].position);
                     continue;
                 }
+            }
+            if(unit.energy == unit.energy_capacity) {
+                continue;
             }
             unit.energize(unit);
         }
