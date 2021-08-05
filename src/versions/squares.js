@@ -1,4 +1,5 @@
 // yare.io code for square units
+// energy pipe is BAD here
 
 // Function Definitions
 import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy, get_total_energy } from "../tools";
@@ -22,6 +23,7 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
       all_spirits.push(spirits[x]);
   }
   
+
   // Gets a list of enemy / friendly spirits that are alive
   let enemy_spirits = all_spirits.filter(x => x.hp == 1).filter(x => x.player_id != 'saltAxAtlas');
   let friendly_spirits = all_spirits.filter(x => x.hp == 1).filter(x => x.player_id == 'saltAxAtlas');
@@ -29,10 +31,7 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
   // Gets number of friendly spirits
   let number_units = friendly_spirits.length;
   // console.log(number_units);
-  
-  // Gets controller of outpost
-  let outpost_controller = outpost.control;
-  
+
   // Gets location for outpost units
   let outpost_unit_position = find_point_within_energize(outpost.position, star_p89.position);
   let base_unit_position = find_point_within_energize(memory['base_star'].position, base.position);
@@ -45,9 +44,15 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
   if(current_mode == 0) {
       let harasser_count = 1;
       let outpost_count  = Math.floor(number_units/3);
+      let base_count = number_units - outpost_count - 1;
+      let pipe_count = 0;
       if(outpost.control != 'saltAxAtlas' && outpost.control != '') {
           harasser_count = 0;
           outpost_count  = 0;
+          base_count = number_units;
+      }
+      if(base_count > 2) {
+          pipe_count = 3;
       }
       for(unit of friendly_spirits) {
           if(harasser_count) {
@@ -78,7 +83,7 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
                   if(unit.energy > 0 && outpost.energy < 1000) {
                       memory[unit.id] = "outpost_charging";
                   } 
-                  else if((unit.energy == 0) || (unit.energy < unit.energy_capacity && outpost.energy == outpost.energy_capacity)) {
+                  else if((unit.energy < 80) || (unit.energy < unit.energy_capacity && outpost.energy == outpost.energy_capacity)) {
                       memory[unit.id] = "outpost_harvesting";
                   }
                   else if(unit.energy == unit.energy_capacity) {
@@ -96,10 +101,27 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
                   memory[unit.id] = "base_defender";
               }
               else {
-                  if(memory[unit.id] == "base_defender") {
+                  if(memory[unit.id] == "base_defender" || memory[unit.id] == "base_pipe_1" || memory[unit.id] == "base_pipe_2" || memory[unit.id] == "base_pipe_3") {
                       memory[unit.id] = "base_harvesting";
                   }
   
+                  if(pipe_count) {
+                      pipe_count -= 1;
+                      switch(pipe_count) {
+                            case 2:
+                                memory[unit.id] = "base_pipe_3";
+                                break;
+                            case 1:
+                                memory[unit.id] = "base_pipe_2";
+                                memory['pipe_2']  = unit;
+                                break;
+                            case 0:
+                                memory[unit.id] = "base_pipe_1";
+                                memory['pipe_1']  = unit;
+                                break;
+                      }
+                  }
+
                   if(unit.energy == unit.energy_capacity) {
                       memory[unit.id] = "base_charging";
                   } 
@@ -187,6 +209,30 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
                   continue;
               }
               unit.energize(unit);
+          }
+          else if(memory[unit.id] == "base_pipe_1") {
+              unit.shout("PIPE!");
+              unit.move(base_unit_position);
+              if(unit.energy > 80) {
+                  unit.energize(base);
+              }
+          }
+          else if(memory[unit.id] == "base_pipe_2") {
+            unit.shout("PIPE!");
+            unit.move(base_pipe_unit_position_1);
+            if(unit.energy > 80) {
+                unit.energize(memory['pipe_1']);
+            }
+          }
+          else if(memory[unit.id] == "base_pipe_3") {
+            unit.shout("PIPE!");
+            unit.move(base_pipe_unit_position_2);
+            if(unit.energy > 80) {
+                unit.energize(memory['pipe_2']);
+            }
+            else {
+                unit.energize(unit)
+            }
           }
       }
   }
