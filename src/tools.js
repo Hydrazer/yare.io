@@ -13,6 +13,15 @@ function normalize_vector(vector, magnitude) {
   return [vector[0] / magnitude, vector[1] / magnitude];
 }
 
+// Function to find the exact point within passed in unit radius
+function find_point_radius(position_1, position_2, radius) {
+  let vector = subtract_positions(position_1, position_2);
+  let magnitude = Math.sqrt(vector[0]**2 + vector[1]**2);
+  let direction = normalize_vector(vector, magnitude);
+  let offset = [Math.floor(direction[0] * radius), Math.floor(direction[1] * radius)];
+  return [offset[0] + position_2[0], offset[1] + position_2[1]];
+}
+
 // Function to find the exact point within 200 unit radius
 function find_point_within_energize(position_1, position_2) {
   let vector = subtract_positions(position_1, position_2);
@@ -36,22 +45,49 @@ function get_closest_enemy(enemies, position) {
   let min_dist = find_dist(spirits[enemies[0]].position, position);
   let closest_enemy = spirits[enemies[0]];
   for(enemy of enemies) {
-      let enemy_dist = find_dist(spirits[enemy].position, position);
-      if(enemy_dist < min_dist) {
-          min_dist = enemy_dist;
-          closest_enemy = spirits[enemy];
-      }
+    let enemy_dist = find_dist(spirits[enemy].position, position);
+    if(enemy_dist < min_dist) {
+      min_dist = enemy_dist;
+      closest_enemy = spirits[enemy];
+    }
   }
   return closest_enemy;
+}
+
+// Function to get the closest enemy to the given position
+function get_closest_enemy_id(enemies, position) {
+  let min_dist = find_dist(enemies[0].position, position);
+  let closest_enemy = enemies[0];
+  for(enemy of enemies) {
+    let enemy_dist = find_dist(enemy.position, position);
+    if(enemy_dist < min_dist) {
+      min_dist = enemy_dist;
+      closest_enemy = enemy;
+    }
+  }
+  return closest_enemy;
+}
+
+// Function to get the closest enemy to the given position
+function get_lowest_energy(units, state) {
+  let min_energy = 1000;
+  let lowest_energy_unit = "NONE";
+  for(unit of units) {
+    if(unit.energy < min_energy && unit.energy < unit.energy_capacity && memory[unit.id] == state) {
+      min_energy = unit.energy;
+      lowest_energy_unit = unit;
+    }
+  }
+  return lowest_energy_unit;
 }
 
 // Function to get the total energy of all enemies passed in
 function get_total_energy(enemies) {
   let total_energy = 0;
   for(enemy of enemies) {
-      total_energy += spirits[enemy].energy
+    total_energy += spirits[enemy].energy
   }
   return total_energy;
 }
 
-export { find_dist, find_point_within_energize, harasser_run, get_closest_enemy, get_total_energy };
+export { find_dist, find_point_radius, find_point_within_energize, harasser_run, get_closest_enemy, get_closest_enemy_id, get_lowest_energy, get_total_energy };

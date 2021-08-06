@@ -44,7 +44,7 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
   if(current_mode == 0) {
       let harasser_count = 1;
       let outpost_count  = Math.floor(number_units/3);
-      let base_count = number_units - outpost_count - 1;
+      let base_count = number_units - outpost_count - harasser_count;
       let pipe_count = 0;
       if(outpost.control != 'saltAxAtlas' && outpost.control != '') {
           harasser_count = 0;
@@ -189,7 +189,7 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
           }
           else if(memory[unit.id] == "base_defender") {
               unit.shout("Defend Base!");
-              let closest_enemy_base = get_closest_enemy(base.sight.enemies, unit.position)
+              let closest_enemy_base = get_closest_enemy(base.sight.enemies, unit.position);
               let distance_to_enemy_at_base = find_dist(unit.position, closest_enemy_base.position);
               if(distance_to_enemy_at_base > 40000) {
                   unit.move(closest_enemy_base.position);
