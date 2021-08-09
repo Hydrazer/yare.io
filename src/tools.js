@@ -44,7 +44,7 @@ function harasser_run(position_1, position_2) {
 function get_closest_enemy(enemies, position) {
   let min_dist = find_dist(spirits[enemies[0]].position, position);
   let closest_enemy = spirits[enemies[0]];
-  for(enemy of enemies) {
+  for(let enemy of enemies) {
     let enemy_dist = find_dist(spirits[enemy].position, position);
     if(enemy_dist < min_dist) {
       min_dist = enemy_dist;
@@ -58,7 +58,7 @@ function get_closest_enemy(enemies, position) {
 function get_closest_enemy_id(enemies, position) {
   let min_dist = find_dist(enemies[0].position, position);
   let closest_enemy = enemies[0];
-  for(enemy of enemies) {
+  for(let enemy of enemies) {
     let enemy_dist = find_dist(enemy.position, position);
     if(enemy_dist < min_dist) {
       min_dist = enemy_dist;
@@ -72,10 +72,10 @@ function get_closest_enemy_id(enemies, position) {
 function get_lowest_energy(units, state) {
   let min_energy = 1000;
   let lowest_energy_unit = "NONE";
-  for(unit of units) {
-    if(unit.energy < min_energy && unit.energy < unit.energy_capacity && memory[unit.id] == state) {
-      min_energy = unit.energy;
-      lowest_energy_unit = unit;
+  for(let u of units) {
+    if(u.energy < min_energy && u.energy < u.energy_capacity && memory[u.id] == state) {
+      min_energy = u.energy;
+      lowest_energy_unit = u;
     }
   }
   return lowest_energy_unit;
@@ -84,7 +84,7 @@ function get_lowest_energy(units, state) {
 // Function to get the total energy of all enemies passed in
 function get_total_energy(enemies) {
   let total_energy = 0;
-  for(enemy of enemies) {
+  for(let enemy of enemies) {
     total_energy += spirits[enemy].energy
   }
   return total_energy;

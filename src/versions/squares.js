@@ -32,6 +32,9 @@ import { find_dist, find_point_within_energize, harasser_run, get_closest_enemy,
   let number_units = friendly_spirits.length;
   // console.log(number_units);
 
+  // Gets controller of outpost
+  let outpost_controller = outpost.control;
+
   // Gets location for outpost units
   let outpost_unit_position = find_point_within_energize(outpost.position, star_p89.position);
   let base_unit_position = find_point_within_energize(memory['base_star'].position, base.position);

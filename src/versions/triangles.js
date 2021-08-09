@@ -38,7 +38,7 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
     let base_pipe_unit_position_1   = find_point_radius(memory['base_star'].position, base.position, 190);
     let base_pipe_unit_position_2   = find_point_radius(memory['base_star'].position, base_pipe_unit_position_1, 180);
     let base_pipe_unit_position_3   = find_point_radius(memory['base_star'].position, base_pipe_unit_position_2, 150);
-    let base_def_idle_position      = find_point_radius(outpost.position, base.position, 50);
+    let base_def_idle_position      = find_point_radius(outpost.position, base.position, 70);
     let harasser_unit_position      = find_point_radius(star_p89.position, enemy_base.position, 300);
 
     let current_mode = 0; // 0 -> Normal Operation, 1 -> Attack Enemy Base
@@ -51,21 +51,21 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
     if(current_mode == 0) {
         let harasser_count = 1;
         let outpost_count  = 2;
-        let pipe_count     = 15;
-        let base_def_count = 10;
+        let pipe_count     = 9;
+        let base_def_count = 5;
         if(outpost_controller != 'saltAxAtlas' && outpost_controller != '') {
             harasser_count = 0;
             outpost_count  = 0;
         }
         let num_per_pipe   = Math.floor((number_units - harasser_count - outpost_count)/3);
-        if(num_per_pipe > 5) {
-            num_per_pipe = 5;
+        if(num_per_pipe > 3) {
+            num_per_pipe = 3;
         }
         let pipe_count_1    = num_per_pipe;
         let pipe_count_2    = num_per_pipe;
         let pipe_count_3    = num_per_pipe;
         // Assign State for Each Unit
-        for(unit of friendly_spirits) {
+        for(let unit of friendly_spirits) {
             if(harasser_count) {
                 if(memory[unit.id] == "outpost_harvesting" && unit.energy != unit.energy_capacity) {
                     memory[unit.id] = "outpost_harvesting";
@@ -144,7 +144,7 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
         console.log(spirits_pipe_2.length)
 
         // Process State for Each Unit
-        for(unit of friendly_spirits) {
+        for(let unit of friendly_spirits) {
             if(memory[unit.id] == "harasser") {
                 let number_enemy_units_harasser = unit.sight.enemies.length;
                 let run = false;
@@ -227,20 +227,18 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
                 unit.shout("Pipe 2!");
                 unit.move(base_pipe_unit_position_2);
                 if(unit.energy > 20) {
-                    //let target = get_lowest_energy(spirits_pipe_1, "base_pipe_1");
-                    //console.log(target.id)
-                    //unit.energize(target);
-                    //target.energy += unit.size;
+                    let target = get_lowest_energy(spirits_pipe_1, "base_pipe_1");
+                    unit.energize(target);
+                    target.energy += unit.size;
                 }
             } 
             else if(memory[unit.id] == "base_pipe_3") {
                 unit.shout("Pipe 3!");
                 unit.move(base_pipe_unit_position_3);
                 if(unit.energy > 20) {
-                    //let target = get_lowest_energy(spirits_pipe_2, "base_pipe_2");
-                    //console.log(target.id)
-                    //unit.energize(target);
-                    //target.energy += unit.size;
+                    let target = get_lowest_energy(spirits_pipe_2, "base_pipe_2");
+                    unit.energize(target);
+                    target.energy += unit.size;
                 }
                 else {
                     unit.energize(unit)
