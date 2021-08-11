@@ -24,20 +24,16 @@ If you want to autoupload (sync) your code to yare use the `-s`
     -   [ ] Calculate Threat Level
     -   [ ] Energy Distrubution / Balancing Within Cluster
     -   [ ] Maintain Proper Harvesting Levels
-    -   [X] Keep Units @ 80% Energy Capacity
-    -   [ ] Automatically Determine When to Attack Enemy Base
+    -   [X] Automatically Determine When to Attack Enemy Base
     -   [ ] Skirt Around Captured Outpost
-    -   [X] Energize While Moving to Best Position
-    -   [X] Create Pipe From Base Star to Base
     -   [ ] Account For Enemy Shape
     -   [ ] Defend Based on Unit Sight
     -   [ ] Improve Harasser Unit Performance
-        -   [X] Harasser Move in Opposite Direct of Closest Enemy
-        -   [X] Harasser Move to Specific Location Instead of Bouncing Between Two Points
+    -   [ ] Switch Code to Evaluate State -> Add Units to Arrays Based on State -> Pass Arrays to Functions
 -   [ ] Circle
     -   [ ] Merging
 -   [ ] Square
     -   [ ] Jumping
 -   [ ] Triangle
-    -   [ ] Exploding
+    -   [X] Exploding
     -   [ ] Heal Units Meant to Explode
