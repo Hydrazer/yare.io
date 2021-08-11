@@ -40,6 +40,7 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
     let base_pipe_unit_position_3   = find_point_radius(memory['base_star'].position, base_pipe_unit_position_2, 150);
     let base_def_idle_position      = find_point_radius(outpost.position, base.position, 70);
     let harasser_unit_position      = find_point_radius(star_p89.position, enemy_base.position, 300);
+    let attacker_unit_position      = find_point_radius(enemy_base.position, star_p89.position, 199);
 
     let current_mode = 0; // 0 -> Normal Operation, 1 -> Attack Enemy Base
 
@@ -51,19 +52,20 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
     if(current_mode == 0) {
         let harasser_count = 1;
         let outpost_count  = 2;
-        let pipe_count     = 9;
-        let base_def_count = 5;
+        let pipe_count     = 12;
+        let base_wait_count = 5;
         if(outpost_controller != 'saltAxAtlas' && outpost_controller != '') {
             harasser_count = 0;
             outpost_count  = 0;
         }
-        let num_per_pipe   = Math.floor((number_units - harasser_count - outpost_count)/3);
+        let num_per_pipe = Math.floor((number_units - harasser_count - outpost_count)/3);
         if(num_per_pipe > 3) {
             num_per_pipe = 3;
         }
         let pipe_count_1    = num_per_pipe;
         let pipe_count_2    = num_per_pipe;
-        let pipe_count_3    = num_per_pipe;
+        let pipe_count_3    = num_per_pipe * 2;
+
         // Assign State for Each Unit
         for(let unit of friendly_spirits) {
             if(harasser_count) {
@@ -108,7 +110,16 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
                     memory[unit.id] = "base_defender";
                 }
                 else {
-                    if(pipe_count_1) {
+                    if(memory[unit.id] == "base_pipe_1") {
+                        pipe_count_1 -= 1;
+                    }
+                    else if(memory[unit.id] == "base_pipe_2") {
+                        pipe_count_2 -= 1;
+                    }
+                    else if(memory[unit.id] == "base_pipe_3") {
+                        pipe_count_3 -= 1;
+                    }
+                    else if(pipe_count_1) {
                         memory[unit.id] = "base_pipe_1";
                         pipe_count_1 -= 1;
                     }
@@ -120,28 +131,39 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
                         memory[unit.id] = "base_pipe_3";
                         pipe_count_3 -= 1;
                     }
+                    else {
+                        memory[unit.id] = "base_pipe_1";
+                    }
                 }
                 pipe_count -= 1;
             } 
-            else if(base_def_count) {
-                if(base.sight.enemies.length > 0) {
+            else {
+                if(memory[unit.id] == "harvest_attacker") {
+                    if(unit.energy == unit.energy_capacity) {
+                        memory[unit.id] = "attacker";
+                    }
+                }
+                else if(memory[unit.id] == "attacker") {
+                    continue;
+                }
+                else if(base.sight.enemies.length > 0) {
                     memory[unit.id] = "base_defender";
                 }
                 else {
-                    memory[unit.id] = "base_def";
+                    memory[unit.id] = "base_wait";
                 }
-                base_def_count -= 1;
-            }
-            else {
-                memory[unit.id] = "attacker";
             }
         }
             
         // THIS IS DUMB - NEEDS TO BE FIXED
-        let spirits_pipe_1 = my_spirits.filter(x => x.hp == 1).filter(x => memory[x.id] == "base_pipe_1");
-        let spirits_pipe_2 = my_spirits.filter(x => x.hp == 1).filter(x => memory[x.id] == "base_pipe_2");
-        console.log(spirits_pipe_1.length)
-        console.log(spirits_pipe_2.length)
+        spirits_pipe_1 = my_spirits.filter(x => x.hp == 1).filter(x => memory[x.id] == "base_pipe_1");
+        spirits_pipe_2 = my_spirits.filter(x => x.hp == 1).filter(x => memory[x.id] == "base_pipe_2");
+        spirits_waiting = my_spirits.filter(x => x.hp == 1).filter(x => memory[x.id] == "base_wait");
+        if(spirits_waiting.length >= base_wait_count) {
+            for(let unit of spirits_waiting) {
+                memory[unit.id] = "attacker";
+            }
+        }
 
         // Process State for Each Unit
         for(let unit of friendly_spirits) {
@@ -212,8 +234,8 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
                 }
                 unit.energize(closest_enemy_base);
             }
-            else if(memory[unit.id] == "base_def") {
-                unit.shout("Idle!");
+            else if(memory[unit.id] == "base_wait") {
+                unit.shout("Wait!");
                 unit.move(base_def_idle_position);
             }
             else if(memory[unit.id] == "base_pipe_1") {
@@ -249,7 +271,15 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
                     unit.move(outpost.position);
                     let closest_enemy_attacker = get_closest_enemy_id(enemy_spirits, unit.position);
                     let distance_to_enemy_at_attacker = find_dist(unit.position, closest_enemy_attacker.position);
-                    if(distance_to_enemy_at_attacker < 40000) {
+                    if(unit.energy == 0 && distance_to_enemy_at_attacker > 70000) {
+                        memory[unit.id] = "harvest_attacker";
+                    }
+                    else if(unit.energy < 5 && distance_to_enemy_at_attacker < 25600) {
+                        unit.move(closest_enemy_attacker.position);
+                        unit.explode();
+                    }
+                    else if(distance_to_enemy_at_attacker < 40000) {
+                        unit.move(closest_enemy_attacker.position);
                         unit.energize(closest_enemy_attacker);
                     }
                     else if(find_dist(unit.position, outpost.position) < 40000) {
@@ -260,7 +290,15 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
                     unit.move(enemy_base.position);
                     let closest_enemy_attacker = get_closest_enemy_id(enemy_spirits, unit.position);
                     let distance_to_enemy_at_attacker = find_dist(unit.position, closest_enemy_attacker.position);
-                    if(distance_to_enemy_at_attacker < 40000) {
+                    if(unit.energy == 0 && distance_to_enemy_at_attacker > 70000) {
+                        memory[unit.id] = "harvest_attacker";
+                    }
+                    else if(unit.energy < 5 && distance_to_enemy_at_attacker < 25600) {
+                        unit.move(closest_enemy_attacker.position);
+                        unit.explode();
+                    }
+                    else if(distance_to_enemy_at_attacker < 40000) {
+                        unit.move(closest_enemy_attacker.position);
                         unit.energize(closest_enemy_attacker);
                     }
                     else if(find_dist(unit.position, enemy_base.position) < 40000) {
@@ -268,7 +306,10 @@ import { find_dist, find_point_radius, get_closest_enemy, get_closest_enemy_id, 
                     }
                 }
             }
-            console.log(unit.last_energized)
+            else if(memory[unit.id] == "harvest_attacker") {
+                unit.move(attacker_unit_position);
+                unit.energize(unit);
+            }
         }
     }
     else if(current_mode == 1) {
