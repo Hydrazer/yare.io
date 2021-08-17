@@ -21,6 +21,9 @@ function get_closest_enemy(enemies, pos) {
 }
 
 {
+  // Save your name into a variable for later comparisons
+  let my_name = base.player_id
+
   // Finds the distance from your base to the 2 base stars in order to determine which star is near your base
   let star_zxq_dist = find_dist(base.position, star_zxq.position);
   let star_a1c_dist = find_dist(base.position, star_a1c.position);
@@ -40,11 +43,11 @@ function get_closest_enemy(enemies, pos) {
   // Gets all spirits that are alive, and belong to the enemy
   enemy_spirits = all_spirits
     .filter((x) => x.hp == 1)
-    .filter((x) => x.player_id != "YOUR_NAME_HERE");
+    .filter((x) => x.player_id != my_name);
   // Gets all spirits that are alive, and belong to you
   friendly_spirits = all_spirits
     .filter((x) => x.hp == 1)
-    .filter((x) => x.player_id == "YOUR_NAME_HERE");
+    .filter((x) => x.player_id == my_name);
 
   // Logs how many spirits you currently have
   let number_units = friendly_spirits.length;
